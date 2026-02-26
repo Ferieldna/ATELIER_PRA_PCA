@@ -231,12 +231,14 @@ Faites preuve de pédagogie et soyez clair dans vos explications et procedures d
 **Exercice 1 :**  
 Quels sont les composants dont la perte entraîne une perte de données ?  
   
-*..Répondez à cet exercice ici..*
+*Dans cette structure, la perte de données ne se produit que si les volumes persistants sont effacés. Le PVC pra-data, le composant majeur qui héberge la base SQLite en production est crucial parce que sa disparition entraînerait l'effacement de la base de données. Le PVC pra-backup est aussi crucial étant donné qu'il renferme les sauvegardes indispensables pour la remise en état. Pour finir, la suppression du stockage physique du cluster (node K3d) peut également conduire à la suppression des volumes.*
 
 **Exercice 2 :**  
 Expliquez nous pourquoi nous n'avons pas perdu les données lors de la supression du PVC pra-data  
   
-*..Répondez à cet exercice ici..*
+*Dans le contexte du scénario de PCA, nous avons supprimé le Pod applicatif, mais nous n’avons pas perdu de données. C'est dû au fait que la base de données SQLite n'est pas stockée dans le conteneur mais dans le PVC pra-data qui est un volume persistant indépendant du cycle de vie du Pod. Lors du scénario de PCA, nous avons supprimé le Pod applicatif, mais nous n’avons pas perdu de données. Cela s’explique par le fait que la base SQLite n’est pas stockée dans le conteneur, mais dans le PVC pra-data, qui est un volume persistant indépendant du cycle de vie du Pod.
+
+Dans le Pod il n'y a que l’application Flask. Quand c'est supprimé, Kubernetes le recrée automatiquement grâce au Deployment. Le volume persistant reste intact. Le nouveau Pod redémarre et se connecte au même PVC ce qui lui permet de retrouver immédiatement toutes les données existantes. Les données sont donc protégées car elles sont stockées dans un stockage persistant et pas dans le conteneur lui-même.*
 
 **Exercice 3 :**  
 Quels sont les RTO et RPO de cette solution ?  
