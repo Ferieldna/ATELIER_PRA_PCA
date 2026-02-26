@@ -268,7 +268,17 @@ Une surveillance et des alertes pour vérifier l’état de l’application et d
 **Exercice 5 :**  
 Proposez une archtecture plus robuste.   
   
-*..Répondez à cet exercice ici..*
+*Pour rendre cette architecture adaptée à un environnement de production, plusieurs améliorations sont nécessaires.
+
+Tout d’abord, la base de données doit être remplacée par un moteur puissant comme MySQL en mettant en place une réplication master/replica et en la déployant à l'aide d'un StatefulSet Kubernetes et d'une StorageClass qui guarantissent une haute disponibilité.
+
+Ensuite, il est nécessaire de mettre en place un stockage distribué comme Longhorn ou Ceph pour assurer la réplication des volumes et la résistance à la perte d'un nœud.
+
+Les sauvegardes doivent être externalisées vers des solutions comme Amazon S3 pour protéger les données en cas de perte complète du cluster et d'assurer également une sauvegarde hors site.
+
+Il est également essentiel d'automatiser le PRA : les jobs de restauration doivent se faire automatiquement avec des tests réguliers et une procédure documentée pour une gestion rapide des incidents.
+
+Et pour finir, pour assurer une surveillance proactive de l'infrastructure, il est essentiel d'implémenter un système de suivi et d'alerte en utilisant Prometheus par exemple. Ceci permettra de contrôler l'état des pods, le bon déroulement des sauvegardes et la capacité du disque disponible.*
 
 ---------------------------------------------------
 Séquence 6 : Ateliers  
