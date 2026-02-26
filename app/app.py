@@ -3,9 +3,13 @@ import sqlite3
 from datetime import datetime
 from flask import Flask, jsonify, request
 
+import glob
+import time
+
 DB_PATH = os.getenv("DB_PATH", "/data/app.db")
 
 app = Flask(__name__)
+
 
 # ---------- DB helpers ----------
 def get_conn():
@@ -87,6 +91,75 @@ def count():
     conn.close()
 
     return jsonify(count=n)
+
+
+@app.get("/status")
+def status():
+    init_db()
+
+    # Nombre d'événements en base
+    try:
+        conn = get_conn()
+        cur = conn.execute("SELECT COUNT(*) FROM events")
+        event_count = cur.fetchone()[0]
+        conn.close()
+    except Exception:
+        event_count = 0
+
+    # Dernier fichier de backup dans /backup
+    backup_files = sorted(glob.glob(os.path.join(BACKUP_DIR, "*.db")))
+
+    if backup_files:
+        last_backup_file = os.path.basename(backup_files[-1])
+        backup_age_seconds = int(time.time() - os.path.getmtime(backup_files[-1]))
+    else:
+        last_backup_file = None
+        backup_age_seconds = None
+
+    return jsonify(
+        count=event_count,
+        last_backup_file=last_backup_file,
+        backup_age_seconds=backup_age_seconds
+    )
+
+@app.get("/backups")
+def backups():
+    """
+    Liste tous les points de restauration disponibles dans /backup.
+    Retourne pour chaque fichier : son nom, le timestamp unix,
+    la date lisible et l'âge en secondes.
+    """
+    backup_files = sorted(
+        glob.glob(os.path.join(BACKUP_DIR, "*.db")),
+        reverse=True  
+    )
+
+    result = []
+    now = time.time()
+
+    for filepath in backup_files:
+        filename = os.path.basename(filepath)
+        mtime = os.path.getmtime(filepath)
+
+        # Extraire le timestamp unix depuis le nom de fichier 
+        try:
+            ts_unix = int(filename.replace("app-", "").replace(".db", ""))
+            ts_human = datetime.fromtimestamp(ts_unix, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        except ValueError:
+            ts_unix = int(mtime)
+            ts_human = datetime.fromtimestamp(mtime, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        result.append({
+            "filename":        filename,
+            "timestamp_unix":  ts_unix,
+            "datetime":        ts_human,
+            "age_seconds":     int(now - mtime)
+        })
+
+    return jsonify(
+        total=len(result),
+        backups=result
+    )
 
 # ---------- Main ----------
 if __name__ == "__main__":
