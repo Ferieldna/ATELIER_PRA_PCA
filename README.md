@@ -243,12 +243,27 @@ Dans le Pod il n'y a que l’application Flask. Quand c'est supprimé, Kubernete
 **Exercice 3 :**  
 Quels sont les RTO et RPO de cette solution ?  
   
-*..Répondez à cet exercice ici..*
+*Le RPO correspond à la fréquence des sauvegardes. Un CronJob Kubernetes exécute ces tâches toutes les minutes. Cela signifie que le RPO est de 1 minute maximum. Pendant un incident, on peut perdre au pire les données écrites durant la dernière minute avant le crash.
+
+Le RTO dépend du type d'incident. Dans le contexte de PCA, si uniquement le Pod tombe en panne, le temps de récupération est de quelques secondes parce que Kubernetes se charge automatiquement de recréer le Pod via le Déploiement.*
 
 **Exercice 4 :**  
 Pourquoi cette solution (cet atelier) ne peux pas être utilisé dans un vrai environnement de production ? Que manque-t-il ?   
   
-*..Répondez à cet exercice ici..*
+*Cette solution est conçue pour un environnement pédagogique et ne peut pas être utilisée telle quelle en production pour plusieurs raisons. 
+SQLite n’est pas adaptée à un environnement de production : c'est une base de données basée sur des fichiers, sans haute disponibilité, sans replication et sans clustering.
+Le stockage local du cluster K3d ne garantit pas de tolérance aux pannes : si un node tombe en panne, les informations sont perdues puisqu'il n'y a pas de stockage distribué.
+L'absence de réplication entre sites et de sauvegarde externe rend impossible toute continuité en cas de catastrophe majeure.
+Le processus de restauration est manuel, ce qui demande une intervention humaine et permet pas une automatisation complète.
+Pour finir, il n'y a pas de supervision ni d'alerte : aucune surveillance n'est en cours et aucun test automatique de sauvegarde n'est réalisé.
+
+Il manque :
+
+Une base de données adaptée à la production avec réplication et haute disponibilité.
+Un stockage externalisé pour tolérer la perte d’un node.
+Des sauvegardes automatisées et externalisées pour un PRA fiable.
+Une automatisation de la restauration sans intervention manuelle.
+Une surveillance et des alertes pour vérifier l’état de l’application et des sauvegardes.*
   
 **Exercice 5 :**  
 Proposez une archtecture plus robuste.   
