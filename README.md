@@ -296,7 +296,26 @@ Difficulté : Moyenne (~2 heures)
 ### **Atelier 2 : Choisir notre point de restauration**  
 Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter la capacité de choisir un point de restauration**.
 
-*..Décrir ici votre procédure de restauration (votre runbook)..*  
+On va tout d'abord lister les backups disponibles avec ces commandes là :
+
+kubectl -n pra run debug-backup --rm -it --image=alpine -- sh
+ls -lh /backup
+
+En suite parmi tous, on en choisit un et j'ai pris celui là : 
+
+app-1772238601.db
+
+On change donc dans le fichier 50-job-restore.yaml la partie env :
+
+          env:
+            - name: RESTORE_FILE
+              value: "app-1772238601.db"
+
+On vérifie au final avec les commandes :
+
+kubectl -n pra get jobs
+kubectl -n pra logs job/sqlite-restore
+
   
 ---------------------------------------------------
 Evaluation
