@@ -299,6 +299,7 @@ Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter
 On va tout d'abord lister les backups disponibles avec ces commandes là :
 
 kubectl -n pra run debug-backup --rm -it --image=alpine -- sh
+
 ls -lh /backup
 
 En suite parmi tous, on en choisit un et j'ai pris celui là : 
@@ -314,6 +315,7 @@ On change donc dans le fichier 50-job-restore.yaml la partie env :
 On vérifie au final avec les commandes :
 
 kubectl -n pra get jobs
+
 kubectl -n pra logs job/sqlite-restore
 
   
